@@ -37,17 +37,12 @@ struct Index {
 	Index(A a, B b, C c) : a(a), b(b), c(c) {}
 };
 
-template <typename A, typename B, typename C>
-struct IndexFull : public Index<A, B, C> {
-	IndexFull(A a, B b, C c) : Index<A, B, C>(a, b, c) {}
-};
-
 template <typename A, typename B>
 struct IndexPartial : public Index<A, B, OpenSlot> {
 	IndexPartial(A a, B b) : Index<A, B, OpenSlot>(a, b, {}) {}
 
 	template <typename C, typename = enable_if_t<is_integral<C>::value>>
-	IndexFull<A, B, C> operator()(C c) { return {Index<A, B, OpenSlot>::a, Index<A, B, OpenSlot>::b, c}; }
+	Index<A, B, C> operator()(C c) { return {Index<A, B, OpenSlot>::a, Index<A, B, OpenSlot>::b, c}; }
 };
 
 template <typename A>
@@ -57,7 +52,7 @@ struct IndexStart : public Index<A, OpenSlot, OpenSlot> {
 	template <typename B, typename = enable_if_t<is_integral<B>::value>>
 	IndexPartial<A, B> operator()(B b) { return {Index<A, OpenSlot, OpenSlot>::a, b}; }
 
-	IndexPartial<A, OpenSlot> operator()() { return {Index<A, OpenSlot, OpenSlot>::a, {}}; }
+	IndexPartial<A, EmptySlot> operator()() { return {Index<A, OpenSlot, OpenSlot>::a, {}}; }
 };
 
 IndexStart<EmptySlot> IndexBuilder() { return {{}}; }
