@@ -19,11 +19,11 @@ struct OpenSlot {};
 #ifdef DEBUG
 #include <iostream>
 using std::ostream;
-ostream& operator<<(ostream& os, const EmptySlot& e) {
+inline ostream& operator<<(ostream& os, const EmptySlot& e) {
 	return os << "EmptySlot";
 } 
 
-ostream& operator<<(ostream& os, const OpenSlot& o) {
+inline ostream& operator<<(ostream& os, const OpenSlot& o) {
 	return os << "OpenSlot";
 } 
 #endif  // DEBUG
@@ -61,10 +61,14 @@ struct IndexStart : public Index<A, OpenSlot, OpenSlot> {
 	}
 };
 
-constexpr IndexStart<EmptySlot> IndexBuilder() { return {{}}; }
+struct IndexBuilder {
+	constexpr IndexStart<EmptySlot> operator()() { return {{}}; }
+	
+	template <typename A, typename = enable_if_t<is_integral<A>::value>>
+	constexpr IndexStart<A> operator()(A a) { return {a}; }
+};
 
-template <typename A, typename = enable_if_t<is_integral<A>::value>>
-constexpr IndexStart<A> IndexBuilder(A a) { return {a}; }
+static IndexBuilder I;
 
 template <
 	typename BaseContainer,

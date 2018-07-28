@@ -3,9 +3,9 @@
 #include <vector>
 
 #define DEBUG
-#include "kirito.h"
+#include <kirito.h>
 
-#define I kirito::IndexBuilder
+using kirito::I;
 
 using std::cout;
 using std::endl;
