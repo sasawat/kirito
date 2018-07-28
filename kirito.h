@@ -142,82 +142,97 @@ public:
 		}
 	}
 
-	template <typename C>
-	class view_iterator : private iterator {
+	template <
+		typename C,
+		typename difference_type = typename iterator::difference_type
+	>
+	class view_iterator {
 	public:
-		using typename iterator::difference_type;
+		iterator iter;
 		const C step;
 
 		view_iterator(const iterator &iter, C step) :
-			iterator(iter), step(step) {}
+			iter(iter), step(step) {}
 
 		view_iterator(iterator &&iter, C step) :
-			iterator(std::move(iter)), step(step) {}
+			iter(std::move(iter)), step(step) {}
 
 		view_iterator& operator+=(difference_type rhs) {
-			return iterator::operator+=(rhs * step);
+			return {iter += (rhs * step), step};
 		}
 
 		view_iterator& operator-=(difference_type rhs) {
-			return iterator::operator-=(rhs * step);
+			return {iter -= (rhs * step), step};
 		}
 
 		T& operator[](difference_type rhs) const {
-			return iterator::operator[](rhs * step);
+			return iter[rhs * step];
 		}
 
-		view_iterator& operator++() { return iterator::operator+=(step); }
+		view_iterator& operator++() {
+			iter += step;
+			return *this;
+		}
 
-		view_iterator& operator++(int) const {
+		view_iterator& operator++(int) {
 			view_iterator temp(*this);
-			iterator::operator+=(step);
+			iter += step;
 			return temp;
 		}
 
-		view_iterator& operator--() { return iterator::operator-=(step); }
+		view_iterator& operator--() {
+			iter -= step;
+			return *this;
+		}
 
-		view_iterator& operator--(int) const {
+		view_iterator& operator--(int) {
 			view_iterator temp(*this);
-			iterator::operator-=(step);
+			iter -= step;
 			return temp;
 		}
 
 		difference_type operator-(const view_iterator& rhs) const {
-			return iterator::operator-(rhs) / step;
+			return (iter - rhs.iter) / step;
 		}
 
 		view_iterator operator+(difference_type rhs) const {
-			return iterator::operator+(rhs * step);
+			return {iter + (rhs * step), step};
 		}
 
 		view_iterator operator-(difference_type rhs) const {
-			return iterator::operator-(rhs * step);
+			return {iter - (rhs * step), step};
 		}
 
-		view_iterator operator<(const view_iterator &rhs) const {
-			if (step < 0) return iterator::operator>(rhs);
-			else          return iterator::operator<(rhs);
+		bool operator<(const view_iterator &rhs) const {
+			if (step < 0) return iter > rhs.iter;
+			else          return iter < rhs.iter;
 		}
 
-		view_iterator operator>(const view_iterator &rhs) const {
-			if (step < 0) return iterator::operator<(rhs);
-			else          return iterator::operator>(rhs);
+		bool operator>(const view_iterator &rhs) const {
+			if (step < 0) return iter < rhs.iter;
+			else          return iter > rhs.iter;
 		}
 		
-		view_iterator operator<=(const view_iterator &rhs) const {
-			if (step < 0) return iterator::operator>=(rhs);
-			else          return iterator::operator<=(rhs);
+		bool operator<=(const view_iterator &rhs) const {
+			if (step < 0) return iter >= rhs.iter;
+			else          return iter <= rhs.iter;
 		}
 
-		view_iterator operator>=(const view_iterator &rhs) const {
-			if (step < 0) return iterator::operator<=(rhs);
-			else          return iterator::operator>=(rhs);
+		bool operator>=(const view_iterator &rhs) const {
+			if (step < 0) return iter <= rhs.iter;
+			else          return iter >= rhs.iter;
+		}
+
+		bool operator==(const view_iterator &rhs) const {
+			return iter == rhs.iter;
+		}
+
+		bool operator!=(const view_iterator &rhs) const {
+			return iter != rhs.iter;
 		}
 		
-		using iterator::operator*;
-		using iterator::operator->;
-		using iterator::operator==;
-		using iterator::operator!=;
+		T& operator*() { return *iter; }
+		T* operator->() { return iter; }
 	};
 
 	template <typename C>
@@ -236,15 +251,26 @@ public:
 
 		View(const iterator &start, const iterator &stop, C step) :
 			start(start, step), stop(stop, step) {}
+
+		operator BaseContainer() {
+			BaseContainer rv;
+			for (auto iter = begin(); iter < end(); iter++) {
+				rv.push_back(*iter);
+			}
+			return rv;
+		}
 	};
 
-	template <typename A, typename B, typename C>
+	template <typename A, typename B, typename C,
+		 typename = enable_if_t<!is_same<C, OpenSlot>::value>>
 	View<C> operator[](Index<A, B, C, true> ndx) {
-		if constexpr (is_same<C, OpenSlot>::value) {
-			return {begin(), end(), 1};
-		} else {
-			return {begin(), end(), ndx.c};
-		}
+		return {getStart(ndx.a), getStop(ndx.b), ndx.c};
+	}
+
+	template <typename A, typename B, typename C,
+		 typename = enable_if_t<is_same<C, OpenSlot>::value>>
+	View<int> operator[](Index<A, B, C, true> ndx) {
+		return {getStart(ndx.a), getStop(ndx.b), 1};
 	}
 };
 

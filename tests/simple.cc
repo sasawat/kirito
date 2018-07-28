@@ -6,6 +6,7 @@
 #include <kirito.h>
 
 using kirito::I;
+using kirito::V;
 
 using std::cout;
 using std::endl;
@@ -18,7 +19,7 @@ void fn(kirito::Index<A, B, C> i) {
 	cout << i.a << i.b << i.c << endl;
 }
 
-void printhelper(std::vector<int> &v) {
+void printhelper(const std::vector<int> &v) {
 	std::cout << "YO ";
 	for (auto a : v) {
 		std::cout << a << " ";
@@ -58,4 +59,21 @@ int main(int argc, char **argv) {
 	printhelper(h);
 	auto i = a[I(1)(5)(2)];
 	printhelper(i);
+
+	auto j = a[V()];
+	printhelper(j);
+	auto k = a[V(1)()];
+	printhelper(k);
+	auto l = a[V()(1)];
+	printhelper(l);
+	auto m = a[V(1)(3)];
+	printhelper(m);
+	auto n = a[V()()(2)];
+	printhelper(n);
+	auto o = a[V(1)()(2)];
+	printhelper(o);
+	auto p = a[V()(4)(2)];
+	printhelper(p);
+	auto q = a[V(1)(5)(2)];
+	printhelper(q);
 }
