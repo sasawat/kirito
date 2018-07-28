@@ -38,6 +38,8 @@ int main(int argc, char **argv) {
 	}
 
 	kirito::FancyContainer<std::vector<int>> a = {1, 2, 3, 4, 5, 6, 7};
+	std::vector<int> NotFancy = a;
+	kirito::FancyContainer<std::vector<int>> lol(std::move(NotFancy));
 
 	auto b = a[I()];
 	fn(I());
