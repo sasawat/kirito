@@ -76,4 +76,9 @@ int main(int argc, char **argv) {
 	printhelper(p);
 	auto q = a[V(1)(5)(2)];
 	printhelper(q);
+
+	auto r = a[I()()(-1)];
+	printhelper(r);
+	auto s = a[V()()(-1)];
+	printhelper(s);
 }

@@ -138,7 +138,21 @@ public:
 		if constexpr (is_same<C, OpenSlot>::value) {
 			return copySlice(getStart(ndx.a), getStop(ndx.b), 1);
 		} else {
-			return copySlice(getStart(ndx.a), getStop(ndx.b), ndx.c);
+			iterator start;
+			iterator stop;
+			if constexpr (is_same<A, EmptySlot>::value) {
+				if (ndx.c < 0) start = end() - 1;
+				else           start = begin();
+			} else {
+				start = getStart(ndx.a);
+			}
+			if constexpr (is_same<B, EmptySlot>::value) {
+				if (ndx.c < 0) stop = begin() - 1;
+				else           stop = end();
+			} else {
+				stop = getStop(ndx.b);
+			}
+			return copySlice(start, stop, ndx.c);
 		}
 	}
 
@@ -264,7 +278,21 @@ public:
 	template <typename A, typename B, typename C,
 		 typename = enable_if_t<!is_same<C, OpenSlot>::value>>
 	View<C> operator[](Index<A, B, C, true> ndx) {
-		return {getStart(ndx.a), getStop(ndx.b), ndx.c};
+		iterator start;
+		iterator stop;
+		if constexpr (is_same<A, EmptySlot>::value) {
+			if (ndx.c < 0) start = end() - 1;
+			else           start = begin();
+		} else {
+			start = getStart(ndx.a);
+		}
+		if constexpr (is_same<B, EmptySlot>::value) {
+			if (ndx.c < 0) stop = begin() - 1;
+			else           stop = end();
+		} else {
+			stop = getStop(ndx.b);
+		}
+		return {start, stop, ndx.c};
 	}
 
 	template <typename A, typename B, typename C,
