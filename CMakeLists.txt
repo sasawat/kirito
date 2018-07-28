@@ -6,6 +6,7 @@ project(kirito)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Find headers
 include_directories(SYSTEM ${PROJECT_SOURCE_DIR})
