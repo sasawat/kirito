@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
 	printhelper(g);
 	auto h = a[I()(4)(2)];
 	printhelper(h);
-	auto i = a[I(1)(5)(2)];
+	auto i = a[I(1)(-2)(2)];
 	printhelper(i);
 
 	auto j = a[V()];
@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
 	printhelper(o);
 	auto p = a[V()(4)(2)];
 	printhelper(p);
-	auto q = a[V(1)(5)(2)];
+	auto q = a[V(1)(-2)(2)];
 	printhelper(q);
 
 	auto r = a[I()()(-1)];

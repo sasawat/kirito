@@ -109,7 +109,7 @@ private:
 			return begin();
 		} else {
 			if (o < 0) {
-				return end() - o;
+				return end() + o;
 			} else {
 				return begin() + o;
 			}
@@ -125,7 +125,7 @@ private:
 			return end();
 		} else {
 			if (o < 0) {
-				return end() - o;
+				return end() + o;
 			} else {
 				return begin() + o;
 			}
