@@ -35,7 +35,7 @@ somefunction(view);
 
 ## Building Tests
 
-Like there is only one test right now but I'm writing more I swear. It's cmake so,
+I have a few tests written. It's all CMake, so:
 ```
 mkdir build && cd build && cmake .. && make
 ```
