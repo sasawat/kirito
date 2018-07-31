@@ -91,11 +91,11 @@ private:
 	template <typename Step>
 	FancyContainer copySlice(iterator start, iterator stop, Step step) {
 		BaseContainer rv;
-		if (start < stop) {
+		if (step > 0) {
 			for (auto iter = start; iter < stop; iter += step) {
 				rv.push_back(*iter);
 			}
-		} else if (start > stop) {
+		} else if (step < 0) {
 			for (auto iter = start; iter > stop; iter += step) {
 				rv.push_back(*iter);
 			}
