@@ -1,3 +1,4 @@
 add_executable(test_simple simple.cc)
 add_executable(test_stackoverflow stackoverflow.cc)
 add_executable(test_conversions conversions.cc)
+add_executable(test_viewops viewops.cc)

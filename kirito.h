@@ -247,7 +247,9 @@ public:
 		}
 		
 		T& operator*() { return *iter; }
+		const T& operator*() const { return *iter; }
 		T* operator->() { return iter; }
+		const T* operator->() const { return iter; }
 	};
 
 	template <typename C>
@@ -257,9 +259,26 @@ public:
 	public:
 		view_iterator<C> begin() { return start; }
 		view_iterator<C> end() { return stop; }
-		view_iterator<C> rbegin() { return {start, -start.step}; }
-		view_iterator<C> rend() { return {stop, -stop.step}; }
-		T &operator[](C at) { return start[at]; }
+		view_iterator<C> rbegin() { return {stop.iter - 1, -stop.step}; }
+		view_iterator<C> rend() { return {start.iter - 1, -start.step}; }
+		const view_iterator<C> cbegin() const { return start; }
+		const view_iterator<C> cend() const { return stop; }
+		const view_iterator<C> crbegin() const {
+			return {stop.iter - 1, -stop.step};
+		}
+		const view_iterator<C> crend() const {
+			return {start.iter - 1, -start.step};
+		}
+
+		T& front() { return start[0]; }
+		const T& front() const { return start[0]; }
+		T& back() { return start[size() - 1]; }
+		const T& back() const { return start[size() - 1]; }
+
+		T& operator[](C at) { return start[at]; }
+		const T &operator[](C at) const { return start[at]; }
+
+		size_t size() const { return cend() - cbegin(); }
 
 		View(const view_iterator<C> &start, const view_iterator<C> &stop) :
 			start(start), stop(stop) {}
