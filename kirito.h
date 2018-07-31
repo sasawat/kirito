@@ -81,6 +81,7 @@ public:
 	using typename BaseContainer::iterator;
 	using BaseContainer::begin;
 	using BaseContainer::end;
+	using BaseContainer::operator[];
 
 	constexpr FancyContainer(const BaseContainer &b) : BaseContainer(b) {}
 	FancyContainer(BaseContainer &&b) : BaseContainer(std::move(b)) {}
@@ -268,6 +269,14 @@ public:
 
 		operator BaseContainer() {
 			BaseContainer rv;
+			for (auto iter = begin(); iter < end(); iter++) {
+				rv.push_back(*iter);
+			}
+			return rv;
+		}
+
+		operator FancyContainer() {
+			FancyContainer rv;
 			for (auto iter = begin(); iter < end(); iter++) {
 				rv.push_back(*iter);
 			}
