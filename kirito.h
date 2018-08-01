@@ -344,7 +344,7 @@ public:
 		} else {
 			stop = getStop(ndx.b);
 		}
-		auto comp = (stop - start) % ndx.c;
+		auto comp = std::abs(stop - start) % ndx.c;
 		return {start, stop + comp, ndx.c};
 	}
 
