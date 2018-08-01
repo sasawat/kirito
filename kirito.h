@@ -7,7 +7,7 @@
 
 namespace kirito {
 
-using std::back_inserter;
+using std::random_access_iterator_tag;
 using std::enable_if_t;
 using std::is_integral;
 using std::is_same;
@@ -161,16 +161,29 @@ public:
 		typename C,
 		typename difference_type = typename iterator::difference_type
 	>
-	class view_iterator {
-	public:
+	class view_iterator :
+		public std::iterator<random_access_iterator_tag, T> {
 		iterator iter;
-		const C step;
-
+		C step;
+	public:
 		view_iterator(const iterator &iter, C step) :
 			iter(iter), step(step) {}
 
 		view_iterator(iterator &&iter, C step) :
 			iter(std::move(iter)), step(step) {}
+
+		view_iterator() = default;
+		view_iterator(const view_iterator &other) = default;
+		view_iterator(view_iterator &&other) = default;
+
+		view_iterator reverse() const {
+			return {iter, -step};
+		}
+
+		view_iterator& operator=(const view_iterator &rhs) {
+			iter = rhs.iter;
+			step = rhs.step;
+		}
 
 		view_iterator& operator+=(difference_type rhs) {
 			return {iter += (rhs * step), step};
@@ -259,15 +272,15 @@ public:
 	public:
 		view_iterator<C> begin() { return start; }
 		view_iterator<C> end() { return stop; }
-		view_iterator<C> rbegin() { return {stop.iter - 1, -stop.step}; }
-		view_iterator<C> rend() { return {start.iter - 1, -start.step}; }
+		view_iterator<C> rbegin() { return (stop).reverse() + 1; }
+		view_iterator<C> rend() { return (start).reverse() + 1; }
 		const view_iterator<C> cbegin() const { return start; }
 		const view_iterator<C> cend() const { return stop; }
 		const view_iterator<C> crbegin() const {
-			return {stop.iter - 1, -stop.step};
+			return (stop).reverse() + 1;
 		}
 		const view_iterator<C> crend() const {
-			return {start.iter - 1, -start.step};
+			return (start).reverse() + 1;
 		}
 
 		T& front() { return start[0]; }
@@ -277,6 +290,8 @@ public:
 
 		T& operator[](C at) { return start[at]; }
 		const T &operator[](C at) const { return start[at]; }
+		T& at(C at) { return start[at]; }
+		const T at(C at) const { return start[at]; }
 
 		size_t size() const { return cend() - cbegin(); }
 
@@ -285,6 +300,15 @@ public:
 
 		View(const iterator &start, const iterator &stop, C step) :
 			start(start, step), stop(stop, step) {}
+
+		void swap(View &other) {
+			auto temp = start;
+			start = other.start;
+			other.start = temp;
+			temp = stop;
+			stop = other.stop;
+			other.stop = temp;
+		}
 
 		operator BaseContainer() {
 			BaseContainer rv;
@@ -320,7 +344,8 @@ public:
 		} else {
 			stop = getStop(ndx.b);
 		}
-		return {start, stop, ndx.c};
+		auto comp = (stop - start) % ndx.c;
+		return {start, stop + comp, ndx.c};
 	}
 
 	template <typename A, typename B, typename C,

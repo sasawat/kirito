@@ -3,7 +3,7 @@ An experiment in cutting and connecting bits of list-like data-structures in C++
 
 The name is kirito because slicing lists is cutting and connecting them, like kirito claims his name means. In addition, I envision this project becoming powerful, much like kirito, but never particularly likable, much like kirito.
 
-I guess it should in theory support all list-like STL containers, and if you ask your compiler nicely, it should optimize down to something acceptable, and many errors in usage should be at compile time even if cryptic. I actually skimmed some compiled stuff with gcc and O3 and it looks pretty good. 
+I guess it should in theory support all random access sequence containers, and if you ask your compiler nicely, it should optimize down to something acceptable, and many errors in usage should be at compile time even if cryptic. I actually skimmed some compiled stuff with gcc and O3 and it looks pretty good. 
 
 ## Usage
 
