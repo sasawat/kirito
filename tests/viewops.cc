@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
 	assert(v[0] == 999);
 	assert(w[0] == 88);
 
-	t = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+	t = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 	v = t[V()()(2)];
 	print(v.begin(), v.end());
 	print(v.rbegin(), v.rend());

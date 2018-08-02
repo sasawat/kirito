@@ -28,6 +28,35 @@ inline ostream& operator<<(ostream& os, const OpenSlot& o) {
 } 
 #endif  // DEBUG
 
+template <typename Offset, typename Container>
+inline auto getStart(Offset o, Container &c) {
+	if constexpr (is_same<Offset, EmptySlot>::value) {
+		return c.begin();
+	} else {
+		if (o < 0) {
+			return c.end() + o;
+		} else {
+			return c.begin() + o;
+		}
+	}
+}
+
+template <typename Offset, typename Container>
+inline auto getStop(Offset o, Container &c) {
+	if constexpr (
+		is_same<Offset, EmptySlot>::value ||
+		is_same<Offset, OpenSlot>::value
+	) {
+		return c.end();
+	} else {
+		if (o < 0) {
+			return c.end() + o;
+		} else {
+			return c.begin() + o;
+		}
+	}
+}
+
 template <typename A, typename B, typename C, bool V = false>
 struct Index {
 	const A a;
@@ -104,40 +133,16 @@ private:
 		return rv;
 	}
 
-	template <typename Offset>
-	iterator getStart(Offset o) {
-		if constexpr (is_same<Offset, EmptySlot>::value) {
-			return begin();
-		} else {
-			if (o < 0) {
-				return end() + o;
-			} else {
-				return begin() + o;
-			}
-		}
-	}
 
-	template <typename Offset>
-	iterator getStop(Offset o) {
-		if constexpr (
-			is_same<Offset, EmptySlot>::value ||
-			is_same<Offset, OpenSlot>::value
-		) {
-			return end();
-		} else {
-			if (o < 0) {
-				return end() + o;
-			} else {
-				return begin() + o;
-			}
-		}
-	}
 
 public:
 	template <typename A, typename B, typename C>
 	FancyContainer operator[](Index<A, B, C, false> ndx) {
 		if constexpr (is_same<C, OpenSlot>::value) {
-			return copySlice(getStart(ndx.a), getStop(ndx.b), 1);
+			return copySlice(
+				getStart(ndx.a, *this),
+				getStop(ndx.b, *this),
+				1);
 		} else {
 			iterator start;
 			iterator stop;
@@ -145,13 +150,13 @@ public:
 				if (ndx.c < 0) start = end() - 1;
 				else           start = begin();
 			} else {
-				start = getStart(ndx.a);
+				start = getStart(ndx.a, *this);
 			}
 			if constexpr (is_same<B, EmptySlot>::value) {
 				if (ndx.c < 0) stop = begin() - 1;
 				else           stop = end();
 			} else {
-				stop = getStop(ndx.b);
+				stop = getStop(ndx.b, *this);
 			}
 			return copySlice(start, stop, ndx.c);
 		}
@@ -171,6 +176,12 @@ public:
 
 		view_iterator(iterator &&iter, C step) :
 			iter(std::move(iter)), step(step) {}
+
+		view_iterator(const view_iterator &iter, C step) :
+			iter(iter.iter), step(step * iter.step) {}
+
+		view_iterator(view_iterator &&iter, C step) :
+			iter(std::move(iter.iter)), step(step * iter.step) {}
 
 		view_iterator() = default;
 		view_iterator(const view_iterator &other) = default;
@@ -301,6 +312,10 @@ public:
 		View(const iterator &start, const iterator &stop, C step) :
 			start(start, step), stop(stop, step) {}
 
+		View(const view_iterator<C> &start, const view_iterator<C> &stop,
+			C step) :
+			start(start, step), stop(stop, step) {}
+
 		void swap(View &other) {
 			auto temp = start;
 			start = other.start;
@@ -325,6 +340,34 @@ public:
 			}
 			return rv;
 		}
+
+		template <typename A, typename B, typename NDXC,
+			 typename = enable_if_t<is_same<NDXC, OpenSlot>::value>>
+		View operator[](Index<A, B, NDXC, true> ndx) {
+			return {getStart(ndx.a, *this), getStop(ndx.b, *this), 1};
+		}
+
+		template <typename A, typename B,
+			 typename = enable_if_t<!is_same<C, OpenSlot>::value>>
+		View operator[](Index<A, B, C, true> ndx) {
+			view_iterator<C> start;
+			view_iterator<C> stop;
+			if constexpr (is_same<A, EmptySlot>::value) {
+				if (ndx.c < 0) start = end() - 1;
+				else           start = begin();
+			} else {
+				start = getStart(ndx.a, *this);
+			}
+			if constexpr (is_same<B, EmptySlot>::value) {
+				if (ndx.c < 0) stop = begin() - 1;
+				else           stop = end();
+			} else {
+				stop = getStop(ndx.b, *this);
+			}
+			auto comp = (start - stop) % ndx.c;
+			if (comp) comp += ndx.c;
+			return {start, stop + comp, ndx.c};
+		}
 	};
 
 	template <typename A, typename B, typename C,
@@ -336,22 +379,23 @@ public:
 			if (ndx.c < 0) start = end() - 1;
 			else           start = begin();
 		} else {
-			start = getStart(ndx.a);
+			start = getStart(ndx.a, *this);
 		}
 		if constexpr (is_same<B, EmptySlot>::value) {
 			if (ndx.c < 0) stop = begin() - 1;
 			else           stop = end();
 		} else {
-			stop = getStop(ndx.b);
+			stop = getStop(ndx.b, *this);
 		}
-		auto comp = std::abs(stop - start) % ndx.c;
+		auto comp = (start - stop) % ndx.c;
+		if (comp) comp += ndx.c;
 		return {start, stop + comp, ndx.c};
 	}
 
 	template <typename A, typename B, typename C,
 		 typename = enable_if_t<is_same<C, OpenSlot>::value>>
 	View<int> operator[](Index<A, B, C, true> ndx) {
-		return {getStart(ndx.a), getStop(ndx.b), 1};
+		return {getStart(ndx.a, *this), getStop(ndx.b, *this), 1};
 	}
 };
 
